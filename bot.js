@@ -185,11 +185,9 @@ controller.hears([new RegExp('search (.*)')], 'message', async (bot,message) => 
     console.log(message);
     console.log(message.user);
  
-;(async () => {
   const response = await axios.get('https://fiddle.jshell.net/robots.txt')
   console.log(response)
-    await bot.reply(message,'Oh hai!' + body.text);
-})()
+    await bot.reply(message,'Oh hai!' + response.data);
 
 
 /*
