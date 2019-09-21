@@ -179,10 +179,22 @@ controller.hears([new RegExp('search (.*)')], 'message', async (bot,message) => 
   // do something to respond to message
    //await bot.reply(message, "okay: " + message.matches[1]);
 
+
     var request = require('request');
     console.log(message);
     console.log(message.user);
 
+ 
+request('https://fiddle.jshell.net/robots.txt', function (error, response, body) {
+  console.log('error:', error); // Print the error if one occurred
+  console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+  console.log('body:', body); // Print the HTML for the Google homepage.
+
+  await bot.reply(message,'Oh hai!' + body);
+
+});
+
+/*
     var options = {
         url: 'https://cse.google.com/cse?cx=001524111494326250050:xyzfsu31695',
         headers: {
@@ -192,6 +204,8 @@ controller.hears([new RegExp('search (.*)')], 'message', async (bot,message) => 
          //body: "{  \"q\": \"" + message.matches[1] + "\",  \"search_engine\": \"google.com\",  \"location\": \"United States\",  \"hl\": \"en\",  \"gl\": \"US\"}"
          body: message.matches[1] 
     };
+
+    */
 
     //console.log(options.body);
     //function callback(error, response, body) {
@@ -205,6 +219,7 @@ controller.hears([new RegExp('search (.*)')], 'message', async (bot,message) => 
     //    }
    // };
    //request(options, callback)
+   /*
    await request.post(options, (error, response, body) => {
         if (!error && response.statusCode == 200){
             console.log(body);
@@ -220,5 +235,6 @@ controller.hears([new RegExp('search (.*)')], 'message', async (bot,message) => 
             console.log(error);
         }
    }).catch( (error) => {console.log(error)})
+*/
 });
 
