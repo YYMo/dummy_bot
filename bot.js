@@ -174,63 +174,34 @@ controller.hears(['hi','hello','howdy','hey','aloha','hola','bonjour','oi'], 'me
 });
 
 
-controller.hears([new RegExp('search (.*)')], 'message', async (bot,message) => {
-
-  // do something to respond to message
-   //await bot.reply(message, "okay: " + message.matches[1]);
+controller.hears([new RegExp('search (.*)'), new RegExp('what is .*'), new RegExp('what are .*'), new RegExp('where is .*'), new RegExp('where are .*'), new RegExp('how to .*'), new RegExp('how can .*'), new RegExp('who .*')], 'message', async (bot,message) => {
 
     const axios = require("axios");
-
 
     console.log(message);
     console.log(message.user);
  
-  const response = await axios.get('https://fiddle.jshell.net/robots.txt')
-  console.log(response)
-    await bot.reply(message, response.data);
-
-
-/*
+    question = message.matches[message.matches.length - 1]
+    google_search_api_url = 'https://www.googleapis.com/customsearch/v1?'
     var options = {
-        url: 'https://cse.google.com/cse?cx=001524111494326250050:xyzfsu31695',
-        headers: {
-            'Content-Type': 'application/json',
-            'apikey': 'AIzaSyDHw_XVC0-pBoP2yr59pVh374G9Ij_dE3I'
+        params: {
+            key: 'AIzaSyDHw_XVC0-pBoP2yr59pVh374G9Ij_dE3I',
+            cx: "001524111494326250050:xyzfsu31695",
+            q: question,
          },
-         //body: "{  \"q\": \"" + message.matches[1] + "\",  \"search_engine\": \"google.com\",  \"location\": \"United States\",  \"hl\": \"en\",  \"gl\": \"US\"}"
-         body: message.matches[1] 
     };
-
-    */
-
-    //console.log(options.body);
-    //function callback(error, response, body) {
-    //    if (!error && response.statusCode == 200) {
-    //        try{
-    //            bot.reply(message, body);
-    //        }
-    //        catch(e){
-    //            console.log(e);
-    //        }
-    //    }
-   // };
-   //request(options, callback)
-   /*
-   await request.post(options, (error, response, body) => {
-        if (!error && response.statusCode == 200){
-            console.log(body);
-            try{
-                 bot.reply(message, JSON.parse(body).organic[0].description); 
-                 console.log(r)
-            }
-            catch(e){
-                console.log(e);
-            }
-         }
-        else {
-            console.log(error);
-        }
-   }).catch( (error) => {console.log(error)})
-*/
+   
+    console.log(options) 
+    await bot.reply(message, "Let me check " + question)
+    try{
+        const response = await axios.get(google_search_api_url, options);
+        console.log(response)
+        var item = response.data.items[0];
+        await bot.reply(message, item.title + '\n' + item.snippet + '\n' + item.link);
+    }
+    catch(error){
+        console.log(error)
+        await bot.reply(message, "Sorry, I lost connect to the wifi... please still love me")
+    }
 });
 
