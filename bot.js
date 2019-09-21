@@ -169,7 +169,7 @@ async function getBotUserByTeam(teamId) {
 controller.hears(['hi','hello','howdy','hey','aloha','hola','bonjour','oi'], 'message', async (bot,message) => {
 
   // do something to respond to message
-  await bot.reply(message,'Oh hai!' + message.text);
+  await bot.reply(message,'Oh hai!');
 
 });
 
@@ -187,7 +187,7 @@ controller.hears([new RegExp('search (.*)')], 'message', async (bot,message) => 
  
   const response = await axios.get('https://fiddle.jshell.net/robots.txt')
   console.log(response)
-    await bot.reply(message,'Oh hai!' + response.data);
+    await bot.reply(message, response.data);
 
 
 /*
