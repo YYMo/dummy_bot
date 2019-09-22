@@ -64,6 +64,9 @@ const controller = new Botkit({
     storage
 });
 
+var listMessages = [];
+
+
 if (process.env.cms_uri) {
     controller.usePlugin(new BotkitCMSHelper({
         uri: process.env.cms_uri,
@@ -93,6 +96,20 @@ controller.ready(() => {
 });
 
 
+controller.middleware.receive.use(async (bot, message, next) => {
+
+    // log it
+    console.log('RECEIVED: ', message);
+    await listMessages.push(message.text)
+    console.log('listMessages: ', listMessages);
+
+    // modify the message
+    message.logged = true;
+
+    // continue processing the message
+    next();
+
+});
 
 controller.webserver.get('/', (req, res) => {
 
@@ -166,7 +183,7 @@ async function getBotUserByTeam(teamId) {
     }
 }
 
-controller.hears(['hi','hello','howdy','hey','aloha','hola','bonjour','oi'], 'message', async (bot,message) => {
+controller.hears(['hi ','hello','howdy','hey','aloha','hola','bonjour'], 'message', async (bot,message) => {
 
   // do something to respond to message
   await bot.reply(message,'Oh hai!');
@@ -174,14 +191,44 @@ controller.hears(['hi','hello','howdy','hey','aloha','hola','bonjour','oi'], 'me
 });
 
 
-controller.hears([new RegExp('search (.*)'), new RegExp('what is .*'), new RegExp('what are .*'), new RegExp('where is .*'), new RegExp('where are .*'), new RegExp('how to .*'), new RegExp('how can .*'), new RegExp('who .*')], 'message', async (bot,message) => {
+controller.hears([new RegExp('search (.*)'), new RegExp('what .*'), new RegExp('where .*'), new RegExp('how .*'), new RegExp('who .*'), new RegExp('do .*'), new RegExp('Search (.*)'), new RegExp('What .*'), new RegExp('Where .*'), new RegExp('How .*'), new RegExp('Who .*'), new RegExp('Do .*')], 'message', async (bot,message) => {
 
     const axios = require("axios");
+    const pos = require("pos"); // part-of-speech tags for NLP
 
     console.log(message);
     console.log(message.user);
  
-    question = message.matches[message.matches.length - 1]
+    prev_question = ""
+    var cnt = 0
+    for(var i = listMessages.length - 1; i >= 1; i--){
+        if(listMessages[i]){ 
+            cnt += 1
+            if (cnt == 2){
+                prev_question = listMessages[i];
+                break;
+            }
+        }
+    }
+
+    curr_question = message.matches[message.matches.length - 1];
+    has_prp = false; 
+    var words = new pos.Lexer().lex(curr_question);
+    var tagger = new pos.Tagger();
+    var taggedWords = tagger.tag(words);
+    for (i in taggedWords) {
+        var taggedWord = taggedWords[i];
+        var word = taggedWord[0];
+        var tag = taggedWord[1];
+        console.log(word + " /" + tag);
+        if(tag=="PRP"){has_prp = true;}
+    }
+
+    if(has_prp){
+        question = prev_question + ', ' + curr_question; }
+    else{
+        question = curr_question;}
+
     google_search_api_url = 'https://www.googleapis.com/customsearch/v1?'
     var options = {
         params: {
@@ -205,3 +252,52 @@ controller.hears([new RegExp('search (.*)'), new RegExp('what is .*'), new RegEx
     }
 });
 
+    controller.on('direct_mention', async(bot, message) => {
+        const axios = require("axios");
+        curr_question = message.text
+        prev_question = ""
+        var cnt = 0
+        for(var i = listMessages.length - 1; i >= 1; i--){
+            if(listMessages[i]){ 
+                    prev_question = listMessages[i];
+                    break;
+            }
+        }
+        question = curr_question
+        if(!curr_question){question = prev_question;}
+        google_search_api_url = 'https://www.googleapis.com/customsearch/v1?'
+        var options = {
+            params: {
+                key: 'AIzaSyDHw_XVC0-pBoP2yr59pVh374G9Ij_dE3I',
+                cx: "001524111494326250050:xyzfsu31695",
+                q: question,
+             },
+        };
+   
+        console.log(options) 
+        await bot.reply(message, "Here I am! Let me check " + question)
+        try{
+            const response = await axios.get(google_search_api_url, options);
+            console.log(response)
+            var item = response.data.items[0];
+            await bot.reply(message, item.title + '\n' + item.snippet + '\n' + item.link);
+        }  
+        catch(error){
+            console.log(error)
+            await bot.reply(message, "Sorry, I lost connect to the wifi... please still love me")
+        }
+    });
+
+   async function retrieve_from_google(query) {
+       const axios = require("axios")
+       google_search_api_url = 'https://www.googleapis.com/customsearch/v1?'
+       var options = {
+            params: {
+                key: 'AIzaSyDHw_XVC0-pBoP2yr59pVh374G9Ij_dE3I',
+                cx: "001524111494326250050:xyzfsu31695",
+                q: query,
+             },
+        }; 
+        const response = await axios.get(google_search_api_url, options);
+        return response;
+   }
