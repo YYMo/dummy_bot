@@ -23,9 +23,6 @@ module.exports = function(controller) {
         await bot.say(`Let's talk in private.`);
     });
 
-    controller.on('direct_mention', async(bot, message) => {
-        await bot.reply(message, `I heard a direct mention that said "${ message.text }"`);
-    });
 
     controller.on('mention', async(bot, message) => {
         await bot.reply(message, `You mentioned me when you said "${ message.text }"`);

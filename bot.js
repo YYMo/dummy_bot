@@ -193,7 +193,6 @@ controller.hears(['hi ','hello','howdy','hey','aloha','hola','bonjour'], 'messag
 
 controller.hears([new RegExp('search (.*)'), new RegExp('what .*'), new RegExp('where .*'), new RegExp('how .*'), new RegExp('who .*'), new RegExp('do .*'), new RegExp('Search (.*)'), new RegExp('What .*'), new RegExp('Where .*'), new RegExp('How .*'), new RegExp('Who .*'), new RegExp('Do .*')], 'message', async (bot,message) => {
 
-    const axios = require("axios");
     const pos = require("pos"); // part-of-speech tags for NLP
 
     console.log(message);
@@ -229,19 +228,9 @@ controller.hears([new RegExp('search (.*)'), new RegExp('what .*'), new RegExp('
     else{
         question = curr_question;}
 
-    google_search_api_url = 'https://www.googleapis.com/customsearch/v1?'
-    var options = {
-        params: {
-            key: 'AIzaSyDHw_XVC0-pBoP2yr59pVh374G9Ij_dE3I',
-            cx: "001524111494326250050:xyzfsu31695",
-            q: question,
-         },
-    };
-   
-    console.log(options) 
     await bot.reply(message, "Let me check " + question)
     try{
-        const response = await axios.get(google_search_api_url, options);
+        const response = await retrieve_from_google(question);
         console.log(response)
         var item = response.data.items[0];
         await bot.reply(message, item.title + '\n' + item.snippet + '\n' + item.link);
@@ -253,7 +242,6 @@ controller.hears([new RegExp('search (.*)'), new RegExp('what .*'), new RegExp('
 });
 
     controller.on('direct_mention', async(bot, message) => {
-        const axios = require("axios");
         curr_question = message.text
         prev_question = ""
         var cnt = 0
@@ -265,19 +253,10 @@ controller.hears([new RegExp('search (.*)'), new RegExp('what .*'), new RegExp('
         }
         question = curr_question
         if(!curr_question){question = prev_question;}
-        google_search_api_url = 'https://www.googleapis.com/customsearch/v1?'
-        var options = {
-            params: {
-                key: 'AIzaSyDHw_XVC0-pBoP2yr59pVh374G9Ij_dE3I',
-                cx: "001524111494326250050:xyzfsu31695",
-                q: question,
-             },
-        };
    
-        console.log(options) 
-        await bot.reply(message, "Here I am! Let me check " + question)
+        await bot.reply(message, "Here! Let me check " + question)
         try{
-            const response = await axios.get(google_search_api_url, options);
+            const response = await retrieve_from_google(question); 
             console.log(response)
             var item = response.data.items[0];
             await bot.reply(message, item.title + '\n' + item.snippet + '\n' + item.link);
